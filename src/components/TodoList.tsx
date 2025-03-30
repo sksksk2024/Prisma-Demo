@@ -8,6 +8,8 @@ import checked from './../images/icon-check.svg';
 import cross from './../images/icon-cross.svg';
 import * as actions from '@/actions';
 import { useEffect, useState } from 'react';
+import { todoSchema } from '@/schemas/todoSchema';
+import { z } from 'zod';
 
 // Define the Todo type
 export type Todo = {
@@ -23,6 +25,7 @@ export interface TodoListProps {
 }
 
 export default function TodoList({ initialTodos }: TodoListProps) {
+  const [error, setError] = useState<string | null>(null);
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
 
   // Fetch todos on initial render
@@ -46,20 +49,29 @@ export default function TodoList({ initialTodos }: TodoListProps) {
     const form = e.target as HTMLFormElement;
     const input = form.elements.namedItem('input') as HTMLInputElement;
 
-    const newTodo: Todo = {
-      id: Date.now().toString(),
-      input: input.value,
-      done: false,
-      createdAt: new Date(),
-    };
+    // Validate the input using Zod
+    try {
+      todoSchema.parse({ input: input.value }); // This will throw an error if validation fails
+      const newTodo: Todo = {
+        id: Date.now().toString(),
+        input: input.value,
+        done: false,
+        createdAt: new Date(),
+      };
 
-    const formData = new FormData();
-    formData.append('input', newTodo.input);
-    await actions.createTodo(formData);
+      // Proceed with adding the todo after successful validation
+      const formData = new FormData();
+      formData.append('input', newTodo.input);
+      await actions.createTodo(formData);
 
-    setTodos((prevTodos) => [...prevTodos, newTodo]);
-
-    input.value = '';
+      setTodos((prevTodos) => [...prevTodos, newTodo]);
+      input.value = '';
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        // Set the validation error message
+        setError(error.errors[0].message); // Use the first error message
+      }
+    }
   };
 
   // Check Todo handler
@@ -141,7 +153,6 @@ export default function TodoList({ initialTodos }: TodoListProps) {
         {/* Adding click events and state for themes */}
         <Image src={sun} alt="go to light theme" />
       </section>
-
       {/* INPUT */}
       {/* Enter button functionality, hint to enter and add (Press Enter) in the input placeholder, or button to create it(for mobile users) */}
       <form onSubmit={handleCreateTodo} className="w-full shadow-lg">
@@ -160,9 +171,18 @@ export default function TodoList({ initialTodos }: TodoListProps) {
             placeholder="Create a new todo... (Press Enter)"
             className="text-lg text-light-grayish-blue-dark w-full py-16P bg-very-dark-desaturated-blue rounded-10BR outline-none ring-0 caret-blue-500"
           />
-        </label>
-      </form>
 
+          <button type="submit" className="cursor-pointer lg:hidden">
+            Create
+          </button>
+        </label>
+        {error && (
+          <div className="uppercase tracking-widest absolute md:left-48I text-start text-red-500 text-sm">
+            {error}
+          </div>
+        )}{' '}
+      </form>
+      {/* Render error message */}
       {/* Todo List Main */}
       <ul className="text-lg text-light-grayish-blue-dark text-start w-full bg-very-dark-desaturated-blue rounded-10BR space-y-2 shadow-lg">
         {todos.map((todo) =>
@@ -176,7 +196,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                   <input type="hidden" name="done" />
                   <button
                     type="button"
-                    className={`min-w-[2rem] min-h-[2rem] border border-white rounded-full
+                    className={`cursor-pointer min-w-[2rem] min-h-[2rem] border border-white rounded-full
                       ${todo.done && 'bg-check-background'}
                       `}
                     onClick={() => handleCheck(todo.id)}
@@ -201,13 +221,12 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                 </li>
               </div>
 
-              <button type="submit" onClick={() => handleDelete(todo.id)}>
-                <Image
-                  id="delete"
-                  src={cross}
-                  className="cursor-pointer"
-                  alt="delete"
-                />
+              <button
+                type="submit"
+                className="cursor-pointer"
+                onClick={() => handleDelete(todo.id)}
+              >
+                <Image id="delete" src={cross} alt="delete" />
               </button>
             </div>
           ) : active && !todo.done ? (
@@ -220,7 +239,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                   <input type="hidden" name="done" />
                   <button
                     type="button"
-                    className={`min-w-[2rem] min-h-[2rem] border border-white rounded-full
+                    className={`cursor-pointer min-w-[2rem] min-h-[2rem] border border-white rounded-full
                       ${todo.done && 'bg-check-background'}
                       `}
                     onClick={() => handleCheck(todo.id)}
@@ -245,13 +264,12 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                 </li>
               </div>
 
-              <button type="submit" onClick={() => handleDelete(todo.id)}>
-                <Image
-                  id="delete"
-                  src={cross}
-                  className="cursor-pointer"
-                  alt="delete"
-                />
+              <button
+                type="submit"
+                className="cursor-pointer"
+                onClick={() => handleDelete(todo.id)}
+              >
+                <Image id="delete" src={cross} alt="delete" />
               </button>
             </div>
           ) : (
@@ -266,7 +284,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                     <input type="hidden" name="done" />
                     <button
                       type="button"
-                      className={`min-w-[2rem] min-h-[2rem] border border-white rounded-full
+                      className={`cursor-pointer min-w-[2rem] min-h-[2rem] border border-white rounded-full
                       ${todo.done && 'bg-check-background'}
                       `}
                       onClick={() => handleCheck(todo.id)}
@@ -291,13 +309,12 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                   </li>
                 </div>
 
-                <button type="submit" onClick={() => handleDelete(todo.id)}>
-                  <Image
-                    id="delete"
-                    src={cross}
-                    className="cursor-pointer"
-                    alt="delete"
-                  />
+                <button
+                  type="submit"
+                  className="cursor-pointer"
+                  onClick={() => handleDelete(todo.id)}
+                >
+                  <Image id="delete" src={cross} alt="delete" />
                 </button>
               </div>
             )
@@ -334,14 +351,16 @@ export default function TodoList({ initialTodos }: TodoListProps) {
           >
             Completed
           </button>
-          <button type="button" className="" onClick={handleClearAll}>
+          <button
+            type="button"
+            className="cursor-pointer"
+            onClick={handleClearAll}
+          >
             Clear Completed
           </button>
         </div>
       </ul>
-
       {/* Mobile More Stats */}
-
       <div className="flex justify-around items-center gap-4 text-dark-grayish-blue-light text-lg w-full p-24P bg-very-dark-desaturated-blue rounded-10BR shadow-lg xs:gap-10 md:justify-center lg:hidden">
         <button
           type="button"
