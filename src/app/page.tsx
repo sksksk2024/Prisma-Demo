@@ -1,45 +1,33 @@
+// page.tsx (Server Component)
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
+import TodoList, { Todo } from '@/components/TodoList';
 import { db } from '@/utils/db';
-import * as actions from '@/actions/index';
-import React from 'react';
-import SaveButton from '@/components/SaveButton';
 
 const Home = async () => {
-  // 2. Get The Todo
-  const data = await db.todo.findMany({
+  const data = (await db.todo.findMany({
     select: {
-      input: true,
       id: true,
+      input: true,
+      createdAt: true,
     },
+    orderBy: {
+      id: 'desc',
+    },
+  })) as Todo[];
 
-    // orderBy: {
-    //   id: 'desc',
-    // },
-  });
+  // Ensure all todos have 'done' explicitly set
+  const todosWithDone: Todo[] = data.map((todo) => ({
+    ...todo,
+    done: todo.done ?? false, // Defaults to false if missing
+  }));
 
   return (
-    <div>
-      <div>
-        <form action={actions.createTodo}>
-          <input type="text" name="input" placeholder="Add a new todo..." />
-          <button type="submit">Add Todo</button>
-        </form>
-
-        <div>
-          {data.map((todo) => (
-            <form key={todo.id} action={actions.editTodo}>
-              <input type="hidden" name="inputId" value={todo.id} />
-
-              <input type="text" name="input" defaultValue={todo.input} />
-
-              <div>
-                <SaveButton />
-                <button formAction={actions.deleteTodo}>Delete</button>
-              </div>
-            </form>
-          ))}
-        </div>
-      </div>
-    </div>
+    <>
+      <Header />
+      <TodoList initialTodos={todosWithDone} />
+      <Footer />
+    </>
   );
 };
 
