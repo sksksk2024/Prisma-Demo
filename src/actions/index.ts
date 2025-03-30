@@ -3,31 +3,86 @@
 import { db } from '@/utils/db';
 
 export async function getTodos() {
-  const todos = await db.todo.findMany(); // Fetch all todos from the database
-  return todos;
+  try {
+    const todos = await db.todo.findMany();
+    return todos;
+  } catch (error) {
+    throw new Error('Failed to fetch todos');
+  }
+}
+
+export async function getTodoById(id: string) {
+  try {
+    const todo = await db.todo.findUnique({
+      where: { id },
+    });
+    if (!todo) {
+      throw new Error('Todo not found');
+    }
+    return todo;
+  } catch (error) {
+    throw new Error('Failed to fetch todo');
+  }
 }
 
 export async function createTodo(formData: FormData) {
-  const input = formData.get('input') as string;
-  await db.todo.create({
-    data: { input, done: false } as { input: string; done: boolean },
-  });
+  try {
+    const input = formData.get('input') as string;
+    if (!input) {
+      throw new Error('Input is required');
+    }
+
+    await db.todo.create({
+      data: { input, done: false } as { input: string; done: boolean },
+    });
+  } catch (error) {
+    throw new Error('Failed to create todo');
+  }
 }
 
 export async function deleteTodo(formData: FormData) {
-  const id = formData.get('id') as string; // Use "id" instead of "inputId"
-  await db.todo.delete({
-    where: { id },
-  });
+  try {
+    const id = formData.get('id') as string;
+    if (!id) {
+      throw new Error('ID is required');
+    }
+
+    await db.todo.delete({
+      where: { id },
+    });
+  } catch (error) {
+    throw new Error('Failed to delete todo');
+  }
+}
+
+export async function deleteMultipleTodos(ids: string[]) {
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error('No IDs provided');
+    }
+
+    await db.todo.deleteMany({
+      where: { id: { in: ids } },
+    });
+  } catch (error) {
+    throw new Error('Failed to delete multiple todos');
+  }
 }
 
 export async function updateTodo(formData: FormData) {
-  const id = formData.get('id') as string;
-  const done = formData.get('done') === 'true'; // Ensure it's a boolean
+  try {
+    const id = formData.get('id') as string;
+    const done = formData.get('done') === 'true';
 
-  // Explicitly define the data object to match the TodoUpdateInput type
-  await db.todo.update({
-    where: { id },
-    data: { done } as { done: boolean }, // Type assertion to ensure 'done' is valid
-  });
+    if (!id) {
+      throw new Error('ID is required');
+    }
+
+    await db.todo.update({
+      where: { id },
+      data: { done } as { done: boolean },
+    });
+  } catch (error) {
+    throw new Error('Failed to update todo');
+  }
 }
