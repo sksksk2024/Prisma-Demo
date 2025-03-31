@@ -8,7 +8,7 @@ export async function getTodos() {
     const todos = await db.todo.findMany();
     return todos;
   } catch (error) {
-    throw new Error('Failed to fetch todos');
+    throw new Error(`Failed to fetch todos: ${error}`);
   }
 }
 
@@ -22,7 +22,7 @@ export async function getTodoById(id: string) {
     }
     return todo;
   } catch (error) {
-    throw new Error('Failed to fetch todo');
+    throw new Error(`Failed to fetch todo: ${error}`);
   }
 }
 
@@ -37,7 +37,7 @@ export async function createTodo(formData: FormData) {
       data: { input, done: false } as { input: string; done: boolean },
     });
   } catch (error) {
-    throw new Error('Failed to create todo');
+    throw new Error(`Failed to create todo: ${error}`);
   }
 }
 
@@ -52,7 +52,7 @@ export async function deleteTodo(formData: FormData) {
       where: { id },
     });
   } catch (error) {
-    throw new Error('Failed to delete todo');
+    throw new Error(`Failed to delete todo: ${error}`);
   }
 }
 
@@ -66,7 +66,7 @@ export async function deleteMultipleTodos(ids: string[]) {
       where: { id: { in: ids } },
     });
   } catch (error) {
-    throw new Error('Failed to delete multiple todos');
+    throw new Error(`Failed to delete multiple todos: ${error}`);
   }
 }
 
@@ -84,6 +84,6 @@ export async function updateTodo(formData: FormData) {
       data: { done } as { done: boolean },
     });
   } catch (error) {
-    throw new Error('Failed to update todo');
+    throw new Error(`Failed to update todo: ${error}`);
   }
 }
