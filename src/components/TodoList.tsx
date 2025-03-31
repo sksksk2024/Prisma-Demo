@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 // components/TodoList.jsx (Client Component)
 'use client';
 
