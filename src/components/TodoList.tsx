@@ -26,7 +26,6 @@ export interface TodoListProps {
 }
 
 export default function TodoList({ initialTodos }: TodoListProps) {
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
   const [initialized, setInitialized] = useState(false); // Track if data has been fetched
@@ -176,7 +175,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
   const [all, setAll] = useState(true);
   const [completed, setCompleted] = useState(false);
 
-  let itemsLeft = todos.filter((todo) => !todo.done).length;
+  const itemsLeft = todos.filter((todo) => !todo.done).length;
 
   const handleClearAll = async () => {
     const completedIds = todos
@@ -206,114 +205,111 @@ export default function TodoList({ initialTodos }: TodoListProps) {
 
   return (
     <main className="relative -top-128I md:-top-192I flex flex-col justify-center items-center gap-10 text-center w-full max-w-container-1000 p-16P mx-auto md:w-[70dvw] md:p-48P">
-      {loading ? (
-        <h1>Loading...</h1>
-      ) : (
-        <>
-          {/* HEADER LIST */}
-          <section className="flex justify-between items-center w-full">
-            <h1 className="text-2xl font-bold uppercase tracking-1.2 lg:text-3xl lg:tracking-1.5">
-              Todo
-            </h1>
-            {/* Adding click events and state for themes */}
-            {theme === 'theme1' ? (
-              <Image
-                src={sun}
-                className="cursor-pointer"
-                alt="go to light theme"
-                onClick={toggleTheme}
-              />
-            ) : (
-              <Image
-                src={moon}
-                className="cursor-pointer"
-                alt="go to light theme"
-                onClick={toggleTheme}
-              />
-            )}
-          </section>
-          {/* INPUT */}
-          <form onSubmit={handleCreateTodo} className="w-full shadow-lg">
-            <label
-              className={`relative grid grid-cols-[2rem_1fr_auto] lg:flex justify-start items-center gap-4 p-16P px-32P rounded-10BR
+      <>
+        {/* HEADER LIST */}
+        <section className="flex justify-between items-center w-full">
+          <h1 className="text-2xl font-bold uppercase tracking-1.2 lg:text-3xl lg:tracking-1.5">
+            Todo
+          </h1>
+          {/* Adding click events and state for themes */}
+          {theme === 'theme1' ? (
+            <Image
+              src={sun}
+              className="cursor-pointer"
+              alt="go to light theme"
+              onClick={toggleTheme}
+            />
+          ) : (
+            <Image
+              src={moon}
+              className="cursor-pointer"
+              alt="go to light theme"
+              onClick={toggleTheme}
+            />
+          )}
+        </section>
+        {/* INPUT */}
+        <form onSubmit={handleCreateTodo} className="w-full shadow-lg">
+          <label
+            className={`relative grid grid-cols-[2rem_1fr_auto] lg:flex justify-start items-center gap-4 p-16P px-32P rounded-10BR
                 ${
                   theme === 'theme1'
                     ? 'bg-very-dark-desaturated-blue text-light-grayish-blue-dark'
                     : 'bg-very-light-gray text-very-dark-grayish-blue-light'
                 }
                 `}
-              htmlFor="addTodo"
-            >
-              <button
-                type="button"
-                className="min-w-[2rem] w-[2rem] min-h-[2rem] border border-light-grayish-blue-dark rounded-full"
-              ></button>
-              <input
-                type="text"
-                id="addTodo"
-                name="input"
-                placeholder="Create a new todo... (Press Enter)"
-                className={`text-lg w-full py-16P rounded-10BR outline-none ring-0 caret-blue-500
+            htmlFor="addTodo"
+          >
+            <button
+              type="button"
+              className="min-w-[2rem] w-[2rem] min-h-[2rem] border border-light-grayish-blue-dark rounded-full"
+            ></button>
+            <input
+              type="text"
+              id="addTodo"
+              name="input"
+              placeholder="Create a new todo... (Press Enter)"
+              className={`text-lg w-full py-16P rounded-10BR outline-none ring-0 caret-blue-500
                 ${
                   theme === 'theme1'
                     ? 'bg-very-dark-desaturated-blue text-light-grayish-blue-dark'
                     : 'bg-very-light-gray'
                 }
                 `}
-              />
-              {/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */}
+            />
+            {/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */}
 
-              <button
-                type="submit"
-                className={`text-md cursor-pointer lg:hidden
+            <button
+              type="submit"
+              className={`text-md cursor-pointer lg:hidden
                 ${
                   theme === 'theme1'
                     ? 'text-light-grayish-blue-dark'
                     : 'text-very-dark-grayish-blue-light'
                 }
                 `}
-              >
-                Create
-              </button>
-            </label>
-            {error && (
-              <div className="uppercase tracking-widest absolute md:left-48I text-start text-red-500 font-bold shadow-xl text-sm">
-                {error}
-              </div>
-            )}{' '}
-          </form>
-          {/* Render error message */}
-          {/* Todo List Main */}
-          <ul
-            className={`text-lg text-start w-full rounded-10BR space-y-2 shadow-lg
+            >
+              Create
+            </button>
+          </label>
+          {error && (
+            <div className="uppercase tracking-widest absolute md:left-48I text-start text-red-500 font-bold shadow-xl text-sm">
+              {error}
+            </div>
+          )}
+        </form>
+        {/* Render error message */}
+        {/* Todo List Main */}
+        <ul
+          className={`text-lg text-start w-full rounded-10BR space-y-2 shadow-lg
             ${
               theme === 'theme1'
                 ? 'text-light-grayish-blue-dark bg-very-dark-desaturated-blue'
                 : 'text-very-dark-grayish-blue-light bg-very-light-gray'
             }
             `}
-          >
-            {todos.map((todo) =>
-              all ? (
-                <div
-                  key={todo.id}
-                  className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+        >
+          {todos.map((todo) =>
+            all ? (
+              <div
+                key={todo.id}
+                className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
                     ${
                       theme === 'theme1'
                         ? 'border-b-white'
                         : 'border-b-dark-grayish-blue-light'
                     }
                     `}
-                >
-                  <div className="flex justify-center items-center gap-4">
-                    <form
-                      action={actions.updateTodo}
-                      className="flex items-center"
-                    >
-                      <input type="hidden" name="done" />
-                      <button
-                        type="button"
-                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
+              >
+                <div className="flex justify-center items-center gap-4">
+                  <form
+                    action={actions.updateTodo}
+                    className="flex items-center"
+                  >
+                    <input type="hidden" name="done" />
+                    <button
+                      type="button"
+                      className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
                       ${todo.done && 'bg-check-background'}
                       ${
                         theme === 'theme1'
@@ -321,56 +317,56 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                           : 'border-dark-grayish-blue-light'
                       }
                       `}
-                        onClick={() => handleCheck(todo.id)}
-                      >
-                        <Image
-                          src={checked}
-                          className={`w-1/2 mx-auto
+                      onClick={() => handleCheck(todo.id)}
+                    >
+                      <Image
+                        src={checked}
+                        className={`w-1/2 mx-auto
                       ${!todo.done && 'hidden'}
                       `}
-                          alt="check todo"
-                        />
-                      </button>
-                    </form>
-                    <li
-                      className={`py-16P ${
-                        todo.done
-                          ? 'line-through text-very-dark-grayish-blue-light'
-                          : ''
-                      }`}
-                    >
-                      {todo.input}
-                    </li>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="cursor-pointer"
-                    onClick={() => handleDelete(todo.id)}
+                        alt="check todo"
+                      />
+                    </button>
+                  </form>
+                  <li
+                    className={`py-16P ${
+                      todo.done
+                        ? 'line-through text-very-dark-grayish-blue-light'
+                        : ''
+                    }`}
                   >
-                    <Image id="delete" src={cross} alt="delete" />
-                  </button>
+                    {todo.input}
+                  </li>
                 </div>
-              ) : active && !todo.done ? (
-                <div
-                  key={todo.id}
-                  className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+
+                <button
+                  type="submit"
+                  className="cursor-pointer"
+                  onClick={() => handleDelete(todo.id)}
+                >
+                  <Image id="delete" src={cross} alt="delete" />
+                </button>
+              </div>
+            ) : active && !todo.done ? (
+              <div
+                key={todo.id}
+                className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
                     ${
                       theme === 'theme1'
                         ? 'border-b-white'
                         : 'border-b-dark-grayish-blue-light'
                     }
                     `}
-                >
-                  <div className="flex justify-center items-center gap-4">
-                    <form
-                      action={actions.updateTodo}
-                      className="flex items-center"
-                    >
-                      <input type="hidden" name="done" />
-                      <button
-                        type="button"
-                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
+              >
+                <div className="flex justify-center items-center gap-4">
+                  <form
+                    action={actions.updateTodo}
+                    className="flex items-center"
+                  >
+                    <input type="hidden" name="done" />
+                    <button
+                      type="button"
+                      className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
                       ${todo.done && 'bg-check-background'}
                       ${
                         theme === 'theme1'
@@ -378,58 +374,58 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                           : 'border-dark-grayish-blue-light'
                       }
                       `}
-                        onClick={() => handleCheck(todo.id)}
-                      >
-                        <Image
-                          src={checked}
-                          className={`w-1/2 mx-auto
+                      onClick={() => handleCheck(todo.id)}
+                    >
+                      <Image
+                        src={checked}
+                        className={`w-1/2 mx-auto
                       ${!todo.done && 'hidden'}
                       `}
-                          alt="check todo"
-                        />
-                      </button>
-                    </form>
-                    <li
-                      className={`py-16P ${
-                        todo.done
-                          ? 'line-through text-very-dark-grayish-blue-light'
-                          : ''
-                      }`}
-                    >
-                      {todo.input}
-                    </li>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="cursor-pointer"
-                    onClick={() => handleDelete(todo.id)}
+                        alt="check todo"
+                      />
+                    </button>
+                  </form>
+                  <li
+                    className={`py-16P ${
+                      todo.done
+                        ? 'line-through text-very-dark-grayish-blue-light'
+                        : ''
+                    }`}
                   >
-                    <Image id="delete" src={cross} alt="delete" />
-                  </button>
+                    {todo.input}
+                  </li>
                 </div>
-              ) : (
-                completed &&
-                todo.done && (
-                  <div
-                    key={todo.id}
-                    className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+
+                <button
+                  type="submit"
+                  className="cursor-pointer"
+                  onClick={() => handleDelete(todo.id)}
+                >
+                  <Image id="delete" src={cross} alt="delete" />
+                </button>
+              </div>
+            ) : (
+              completed &&
+              todo.done && (
+                <div
+                  key={todo.id}
+                  className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
                       ${
                         theme === 'theme1'
                           ? 'border-b-white'
                           : 'border-b-dark-grayish-blue-light'
                       }
                       `}
-                  >
-                    <div className="flex justify-center items-center gap-4">
-                      <form
-                        action={actions.updateTodo}
-                        className="flex items-center"
-                      >
-                        <input type="hidden" name="done" />
-                        <button
-                          type="button"
-                          className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
+                >
+                  <div className="flex justify-center items-center gap-4">
+                    <form
+                      action={actions.updateTodo}
+                      className="flex items-center"
+                    >
+                      <input type="hidden" name="done" />
+                      <button
+                        type="button"
+                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
                       ${todo.done && 'bg-check-background'}
                       ${
                         theme === 'theme1'
@@ -437,119 +433,118 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                           : 'border-dark-grayish-blue-light'
                       }
                       `}
-                          onClick={() => handleCheck(todo.id)}
-                        >
-                          <Image
-                            src={checked}
-                            className={`w-1/2 mx-auto
+                        onClick={() => handleCheck(todo.id)}
+                      >
+                        <Image
+                          src={checked}
+                          className={`w-1/2 mx-auto
                       ${!todo.done && 'hidden'}
                       `}
-                            alt="check todo"
-                          />
-                        </button>
-                      </form>
-                      <li
-                        className={`py-16P ${
-                          todo.done
-                            ? 'line-through text-very-dark-grayish-blue-light'
-                            : ''
-                        }`}
-                      >
-                        {todo.input}
-                      </li>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="cursor-pointer"
-                      onClick={() => handleDelete(todo.id)}
+                          alt="check todo"
+                        />
+                      </button>
+                    </form>
+                    <li
+                      className={`py-16P ${
+                        todo.done
+                          ? 'line-through text-very-dark-grayish-blue-light'
+                          : ''
+                      }`}
                     >
-                      <Image id="delete" src={cross} alt="delete" />
-                    </button>
+                      {todo.input}
+                    </li>
                   </div>
-                )
-              )
-            )}
 
-            {/* Stats */}
-            <div className="flex justify-between items-center gap-4 text-md text-dark-grayish-blue-light p-24P">
-              <div className="">{itemsLeft} items left</div>
-              <button
-                type="button"
-                className={`hidden cursor-pointer lg:block
-                  ${all && 'text-bright-blue'}
-                  `}
-                onClick={handleAll}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                className={`hidden cursor-pointer lg:block
-                  ${active && 'text-bright-blue'}
-                  `}
-                onClick={handleActivated}
-              >
-                Active
-              </button>
-              <button
-                type="button"
-                className={`hidden cursor-pointer lg:block
-                  ${completed && 'text-bright-blue'}
-                  `}
-                onClick={handleCompleted}
-              >
-                Completed
-              </button>
-              <button
-                type="button"
-                className="cursor-pointer"
-                onClick={handleClearAll}
-              >
-                Clear Completed
-              </button>
-            </div>
-          </ul>
-          {/* Mobile More Stats */}
-          <div
-            className={`flex justify-around items-center gap-4 text-dark-grayish-blue-light text-lg w-full p-24P rounded-10BR shadow-lg xs:gap-10 md:justify-center lg:hidden
-            ${
-              theme === 'theme1'
-                ? 'bg-very-dark-desaturated-blue'
-                : 'bg-very-light-gray'
-            }
-            `}
-          >
+                  <button
+                    type="submit"
+                    className="cursor-pointer"
+                    onClick={() => handleDelete(todo.id)}
+                  >
+                    <Image id="delete" src={cross} alt="delete" />
+                  </button>
+                </div>
+              )
+            )
+          )}
+
+          {/* Stats */}
+          <div className="flex justify-between items-center gap-4 text-md text-dark-grayish-blue-light p-24P">
+            <div className="">{itemsLeft} items left</div>
             <button
               type="button"
-              className={`cursor-pointer 
-                ${all && 'text-bright-blue'}
-                `}
+              className={`hidden cursor-pointer lg:block
+                  ${all && 'text-bright-blue'}
+                  `}
               onClick={handleAll}
             >
               All
             </button>
             <button
               type="button"
-              className={`cursor-pointer active:text-bright-blue
-                ${active && 'text-bright-blue'}
-                `}
+              className={`hidden cursor-pointer lg:block
+                  ${active && 'text-bright-blue'}
+                  `}
               onClick={handleActivated}
             >
               Active
             </button>
             <button
               type="button"
-              className={`cursor-pointer active:text-bright-blue
-                ${completed && 'text-bright-blue'}
-                `}
+              className={`hidden cursor-pointer lg:block
+                  ${completed && 'text-bright-blue'}
+                  `}
               onClick={handleCompleted}
             >
               Completed
             </button>
+            <button
+              type="button"
+              className="cursor-pointer"
+              onClick={handleClearAll}
+            >
+              Clear Completed
+            </button>
           </div>
-        </>
-      )}
+        </ul>
+        {/* Mobile More Stats */}
+        <div
+          className={`flex justify-around items-center gap-4 text-dark-grayish-blue-light text-lg w-full p-24P rounded-10BR shadow-lg xs:gap-10 md:justify-center lg:hidden
+            ${
+              theme === 'theme1'
+                ? 'bg-very-dark-desaturated-blue'
+                : 'bg-very-light-gray'
+            }
+            `}
+        >
+          <button
+            type="button"
+            className={`cursor-pointer 
+                ${all && 'text-bright-blue'}
+                `}
+            onClick={handleAll}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            className={`cursor-pointer active:text-bright-blue
+                ${active && 'text-bright-blue'}
+                `}
+            onClick={handleActivated}
+          >
+            Active
+          </button>
+          <button
+            type="button"
+            className={`cursor-pointer active:text-bright-blue
+                ${completed && 'text-bright-blue'}
+                `}
+            onClick={handleCompleted}
+          >
+            Completed
+          </button>
+        </div>
+      </>
     </main>
   );
 }
