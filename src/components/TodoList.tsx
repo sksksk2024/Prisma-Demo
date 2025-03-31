@@ -10,6 +10,7 @@ import * as actions from '@/actions';
 import { useEffect, useState } from 'react';
 import { todoSchema } from '@/schemas/todoSchema';
 import { z } from 'zod';
+import { useThemeStore } from './store/useThemeStore';
 
 // Define the Todo type
 export type Todo = {
@@ -29,6 +30,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
   const [error, setError] = useState<string | null>(null);
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
   const [initialized, setInitialized] = useState(false); // Track if data has been fetched
+  const { theme, toggleTheme } = useThemeStore();
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -214,53 +216,110 @@ export default function TodoList({ initialTodos }: TodoListProps) {
               Todo
             </h1>
             {/* Adding click events and state for themes */}
-            <Image src={sun} alt="go to light theme" />
+            {theme === 'theme1' ? (
+              <Image
+                src={sun}
+                className="cursor-pointer"
+                alt="go to light theme"
+                onClick={toggleTheme}
+              />
+            ) : (
+              <Image
+                src={moon}
+                className="cursor-pointer"
+                alt="go to light theme"
+                onClick={toggleTheme}
+              />
+            )}
           </section>
           {/* INPUT */}
-          {/* Enter button functionality, hint to enter and add (Press Enter) in the input placeholder, or button to create it(for mobile users) */}
           <form onSubmit={handleCreateTodo} className="w-full shadow-lg">
             <label
-              className="flex justify-start items-center gap-4 p-8P px-32P bg-very-dark-desaturated-blue rounded-10BR"
+              className={`relative grid grid-cols-[2rem_1fr_auto] lg:flex justify-start items-center gap-4 p-16P px-32P rounded-10BR
+                ${
+                  theme === 'theme1'
+                    ? 'bg-very-dark-desaturated-blue text-light-grayish-blue-dark'
+                    : 'bg-very-light-gray text-very-dark-grayish-blue-light'
+                }
+                `}
               htmlFor="addTodo"
             >
               <button
                 type="button"
-                className="min-w-[2rem] min-h-[2rem] border border-light-grayish-blue-dark rounded-full"
+                className="min-w-[2rem] w-[2rem] min-h-[2rem] border border-light-grayish-blue-dark rounded-full"
               ></button>
               <input
                 type="text"
                 id="addTodo"
                 name="input"
                 placeholder="Create a new todo... (Press Enter)"
-                className="text-lg text-light-grayish-blue-dark w-full py-16P bg-very-dark-desaturated-blue rounded-10BR outline-none ring-0 caret-blue-500"
+                className={`text-lg w-full py-16P rounded-10BR outline-none ring-0 caret-blue-500
+                ${
+                  theme === 'theme1'
+                    ? 'bg-very-dark-desaturated-blue text-light-grayish-blue-dark'
+                    : 'bg-very-light-gray'
+                }
+                `}
               />
+              {/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */}
 
-              <button type="submit" className="cursor-pointer lg:hidden">
+              <button
+                type="submit"
+                className={`text-md cursor-pointer lg:hidden
+                ${
+                  theme === 'theme1'
+                    ? 'text-light-grayish-blue-dark'
+                    : 'text-very-dark-grayish-blue-light'
+                }
+                `}
+              >
                 Create
               </button>
             </label>
             {error && (
-              <div className="uppercase tracking-widest absolute md:left-48I text-start text-red-500 text-sm">
+              <div className="uppercase tracking-widest absolute md:left-48I text-start text-red-500 font-bold shadow-xl text-sm">
                 {error}
               </div>
             )}{' '}
           </form>
           {/* Render error message */}
           {/* Todo List Main */}
-          <ul className="text-lg text-light-grayish-blue-dark text-start w-full bg-very-dark-desaturated-blue rounded-10BR space-y-2 shadow-lg">
+          <ul
+            className={`text-lg text-start w-full rounded-10BR space-y-2 shadow-lg
+            ${
+              theme === 'theme1'
+                ? 'text-light-grayish-blue-dark bg-very-dark-desaturated-blue'
+                : 'text-very-dark-grayish-blue-light bg-very-light-gray'
+            }
+            `}
+          >
             {todos.map((todo) =>
               all ? (
                 <div
                   key={todo.id}
-                  className="flex justify-between items-center gap-6 border-b-white border-b-2 p-8P px-32P"
+                  className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+                    ${
+                      theme === 'theme1'
+                        ? 'border-b-white'
+                        : 'border-b-dark-grayish-blue-light'
+                    }
+                    `}
                 >
                   <div className="flex justify-center items-center gap-4">
-                    <form action={actions.updateTodo}>
+                    <form
+                      action={actions.updateTodo}
+                      className="flex items-center"
+                    >
                       <input type="hidden" name="done" />
                       <button
                         type="button"
-                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border border-white rounded-full
+                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
                       ${todo.done && 'bg-check-background'}
+                      ${
+                        theme === 'theme1'
+                          ? 'border-white'
+                          : 'border-dark-grayish-blue-light'
+                      }
                       `}
                         onClick={() => handleCheck(todo.id)}
                       >
@@ -295,15 +354,29 @@ export default function TodoList({ initialTodos }: TodoListProps) {
               ) : active && !todo.done ? (
                 <div
                   key={todo.id}
-                  className="flex justify-between items-center gap-6 border-b-white border-b-2 p-8P px-32P"
+                  className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+                    ${
+                      theme === 'theme1'
+                        ? 'border-b-white'
+                        : 'border-b-dark-grayish-blue-light'
+                    }
+                    `}
                 >
                   <div className="flex justify-center items-center gap-4">
-                    <form action={actions.updateTodo}>
+                    <form
+                      action={actions.updateTodo}
+                      className="flex items-center"
+                    >
                       <input type="hidden" name="done" />
                       <button
                         type="button"
-                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border border-white rounded-full
+                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
                       ${todo.done && 'bg-check-background'}
+                      ${
+                        theme === 'theme1'
+                          ? 'border-white'
+                          : 'border-dark-grayish-blue-light'
+                      }
                       `}
                         onClick={() => handleCheck(todo.id)}
                       >
@@ -340,15 +413,29 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                 todo.done && (
                   <div
                     key={todo.id}
-                    className="flex justify-between items-center gap-6 border-b-white border-b-2 p-8P px-32P"
+                    className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+                      ${
+                        theme === 'theme1'
+                          ? 'border-b-white'
+                          : 'border-b-dark-grayish-blue-light'
+                      }
+                      `}
                   >
                     <div className="flex justify-center items-center gap-4">
-                      <form action={actions.updateTodo}>
+                      <form
+                        action={actions.updateTodo}
+                        className="flex items-center"
+                      >
                         <input type="hidden" name="done" />
                         <button
                           type="button"
-                          className={`cursor-pointer min-w-[2rem] min-h-[2rem] border border-white rounded-full
+                          className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
                       ${todo.done && 'bg-check-background'}
+                      ${
+                        theme === 'theme1'
+                          ? 'border-white'
+                          : 'border-dark-grayish-blue-light'
+                      }
                       `}
                           onClick={() => handleCheck(todo.id)}
                         >
@@ -424,7 +511,15 @@ export default function TodoList({ initialTodos }: TodoListProps) {
             </div>
           </ul>
           {/* Mobile More Stats */}
-          <div className="flex justify-around items-center gap-4 text-dark-grayish-blue-light text-lg w-full p-24P bg-very-dark-desaturated-blue rounded-10BR shadow-lg xs:gap-10 md:justify-center lg:hidden">
+          <div
+            className={`flex justify-around items-center gap-4 text-dark-grayish-blue-light text-lg w-full p-24P rounded-10BR shadow-lg xs:gap-10 md:justify-center lg:hidden
+            ${
+              theme === 'theme1'
+                ? 'bg-very-dark-desaturated-blue'
+                : 'bg-very-light-gray'
+            }
+            `}
+          >
             <button
               type="button"
               className={`cursor-pointer 
