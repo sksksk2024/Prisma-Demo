@@ -7,11 +7,11 @@ import moon from './../images/icon-moon.svg';
 import checked from './../images/icon-check.svg';
 import cross from './../images/icon-cross.svg';
 import * as actions from '@/actions';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { todoSchema } from '@/schemas/todoSchema';
 import { z } from 'zod';
 import { useThemeStore } from './store/useThemeStore';
-import { Reorder, motion, useDragControls } from 'framer-motion';
+import { Reorder, useDragControls } from 'framer-motion';
 
 // Define the Todo type
 export type Todo = {

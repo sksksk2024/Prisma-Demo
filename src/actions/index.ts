@@ -1,7 +1,6 @@
 'use server';
 
 import { db } from '@/utils/db';
-import { Prisma } from '@prisma/client';
 
 export async function updateTodoOrder(
   orderedTodos: { id: string; order: number }[]
