@@ -7,10 +7,11 @@ import moon from './../images/icon-moon.svg';
 import checked from './../images/icon-check.svg';
 import cross from './../images/icon-cross.svg';
 import * as actions from '@/actions';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { todoSchema } from '@/schemas/todoSchema';
 import { z } from 'zod';
 import { useThemeStore } from './store/useThemeStore';
+import { Reorder, motion, useDragControls } from 'framer-motion';
 
 // Define the Todo type
 export type Todo = {
@@ -18,6 +19,8 @@ export type Todo = {
   input: string;
   done?: boolean;
   createdAt: Date;
+  order: number;
+  // container: MutableRefObject<null>;
 };
 
 // Define props type
@@ -26,16 +29,27 @@ export interface TodoListProps {
 }
 
 export default function TodoList({ initialTodos }: TodoListProps) {
+  // const container = useRef(null);
+
   const [error, setError] = useState<string | null>(null);
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
   const [initialized, setInitialized] = useState(false); // Track if data has been fetched
   const { theme, toggleTheme } = useThemeStore();
 
+  const controls = useDragControls();
+
   useEffect(() => {
     const fetchTodos = async () => {
       try {
         const todosFromBackend = await actions.getTodos(); // Fetch todos from backend
-        setTodos(todosFromBackend);
+
+        // Ensure each todo has an 'order' property
+        const todosWithOrder = todosFromBackend.map((todo, index) => ({
+          ...todo,
+          order: index, // Assign an order if it's missing
+        }));
+
+        setTodos(todosWithOrder);
       } catch (error) {
         console.error('Error fetching todos:', error);
         setError('Failed to fetch todos.');
@@ -58,6 +72,27 @@ export default function TodoList({ initialTodos }: TodoListProps) {
     return () => clearInterval(interval);
   }, [initialized]); // Dependencies to ensure fetching is triggered initially
 
+  // !!!!!!!!!!!!!!!!!!!!!!!!!
+
+  const handleReorder = async (newOrder: Todo[]) => {
+    setTodos(newOrder); // Update local state first for smooth UI
+
+    // Prepare data to send to the backend
+    const orderedTodos = newOrder.map((todo, index) => ({
+      id: todo.id,
+      order: index, // Assign new order index
+    }));
+
+    // Send the updated order to the backend
+    try {
+      await actions.updateTodoOrder(orderedTodos);
+    } catch (error) {
+      console.error('Error updating todo order:', error);
+    }
+  };
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!
+
   // Create Todo handler with optimistic update
   const handleCreateTodo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +112,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
         input: input.value,
         done: false,
         createdAt: new Date(),
+        order: todos.length,
       };
 
       // Optimistically update the state by adding the new todo
@@ -289,135 +325,29 @@ export default function TodoList({ initialTodos }: TodoListProps) {
             }
             `}
         >
-          {todos.map((todo) =>
-            all ? (
-              <div
-                key={todo.id}
-                className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
-                    ${
-                      theme === 'theme1'
-                        ? 'border-b-white'
-                        : 'border-b-dark-grayish-blue-light'
-                    }
-                    `}
-              >
-                <div className="flex justify-center items-center gap-4">
-                  <form
-                    action={actions.updateTodo}
-                    className="flex items-center"
-                  >
-                    <input type="hidden" name="done" />
-                    <button
-                      type="button"
-                      className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
-                      ${todo.done && 'bg-check-background'}
-                      ${
-                        theme === 'theme1'
-                          ? 'border-white'
-                          : 'border-dark-grayish-blue-light'
-                      }
-                      `}
-                      onClick={() => handleCheck(todo.id)}
-                    >
-                      <Image
-                        src={checked}
-                        className={`w-1/2 mx-auto
-                      ${!todo.done && 'hidden'}
-                      `}
-                        alt="check todo"
-                      />
-                    </button>
-                  </form>
-                  <li
-                    className={`py-16P ${
-                      todo.done
-                        ? 'line-through text-very-dark-grayish-blue-light'
-                        : ''
-                    }`}
-                  >
-                    {todo.input}
-                  </li>
-                </div>
-
-                <button
-                  type="submit"
-                  className="cursor-pointer"
-                  onClick={() => handleDelete(todo.id)}
-                >
-                  <Image id="delete" src={cross} alt="delete" />
-                </button>
-              </div>
-            ) : active && !todo.done ? (
-              <div
-                key={todo.id}
-                className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
-                    ${
-                      theme === 'theme1'
-                        ? 'border-b-white'
-                        : 'border-b-dark-grayish-blue-light'
-                    }
-                    `}
-              >
-                <div className="flex justify-center items-center gap-4">
-                  <form
-                    action={actions.updateTodo}
-                    className="flex items-center"
-                  >
-                    <input type="hidden" name="done" />
-                    <button
-                      type="button"
-                      className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
-                      ${todo.done && 'bg-check-background'}
-                      ${
-                        theme === 'theme1'
-                          ? 'border-white'
-                          : 'border-dark-grayish-blue-light'
-                      }
-                      `}
-                      onClick={() => handleCheck(todo.id)}
-                    >
-                      <Image
-                        src={checked}
-                        className={`w-1/2 mx-auto
-                      ${!todo.done && 'hidden'}
-                      `}
-                        alt="check todo"
-                      />
-                    </button>
-                  </form>
-                  <li
-                    className={`py-16P ${
-                      todo.done
-                        ? 'line-through text-very-dark-grayish-blue-light'
-                        : ''
-                    }`}
-                  >
-                    {todo.input}
-                  </li>
-                </div>
-
-                <button
-                  type="submit"
-                  className="cursor-pointer"
-                  onClick={() => handleDelete(todo.id)}
-                >
-                  <Image id="delete" src={cross} alt="delete" />
-                </button>
-              </div>
-            ) : (
-              completed &&
-              todo.done && (
-                <div
+          <Reorder.Group
+            axis="y"
+            values={todos}
+            onReorder={handleReorder}
+            // ref={container}
+          >
+            {todos.map((todo) =>
+              all ? (
+                <Reorder.Item
                   key={todo.id}
+                  value={todo}
+                  dragControls={controls}
+                  dragConstraints={{ left: 0, top: 0, right: 0, bottom: 0 }}
+                  dragElastic={0.2}
                   className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
-                      ${
-                        theme === 'theme1'
-                          ? 'border-b-white'
-                          : 'border-b-dark-grayish-blue-light'
-                      }
-                      `}
+                    ${
+                      theme === 'theme1'
+                        ? 'border-b-white'
+                        : 'border-b-dark-grayish-blue-light'
+                    }
+                    `}
                 >
-                  <div className="flex justify-center items-center gap-4">
+                  <span className="flex justify-center items-center gap-4">
                     <form
                       action={actions.updateTodo}
                       className="flex items-center"
@@ -444,7 +374,7 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                         />
                       </button>
                     </form>
-                    <li
+                    <span
                       className={`py-16P ${
                         todo.done
                           ? 'line-through text-very-dark-grayish-blue-light'
@@ -452,8 +382,8 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                       }`}
                     >
                       {todo.input}
-                    </li>
-                  </div>
+                    </span>
+                  </span>
 
                   <button
                     type="submit"
@@ -462,10 +392,136 @@ export default function TodoList({ initialTodos }: TodoListProps) {
                   >
                     <Image id="delete" src={cross} alt="delete" />
                   </button>
-                </div>
+                </Reorder.Item>
+              ) : active && !todo.done ? (
+                <Reorder.Item
+                  key={todo.id}
+                  value={todo}
+                  dragControls={controls}
+                  dragConstraints={{ left: 0, top: 0, right: 0, bottom: 0 }}
+                  dragElastic={0.2}
+                  className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+                    ${
+                      theme === 'theme1'
+                        ? 'border-b-white'
+                        : 'border-b-dark-grayish-blue-light'
+                    }
+                    `}
+                >
+                  <span className="flex justify-center items-center gap-4">
+                    <form
+                      action={actions.updateTodo}
+                      className="flex items-center"
+                    >
+                      <input type="hidden" name="done" />
+                      <button
+                        type="button"
+                        className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
+                      ${todo.done && 'bg-check-background'}
+                      ${
+                        theme === 'theme1'
+                          ? 'border-white'
+                          : 'border-dark-grayish-blue-light'
+                      }
+                      `}
+                        onClick={() => handleCheck(todo.id)}
+                      >
+                        <Image
+                          src={checked}
+                          className={`w-1/2 mx-auto
+                      ${!todo.done && 'hidden'}
+                      `}
+                          alt="check todo"
+                        />
+                      </button>
+                    </form>
+                    <span
+                      className={`py-16P ${
+                        todo.done
+                          ? 'line-through text-very-dark-grayish-blue-light'
+                          : ''
+                      }`}
+                    >
+                      {todo.input}
+                    </span>
+                  </span>
+
+                  <button
+                    type="submit"
+                    className="cursor-pointer"
+                    onClick={() => handleDelete(todo.id)}
+                  >
+                    <Image id="delete" src={cross} alt="delete" />
+                  </button>
+                </Reorder.Item>
+              ) : (
+                completed &&
+                todo.done && (
+                  <Reorder.Item
+                    key={todo.id}
+                    value={todo}
+                    dragControls={controls}
+                    dragConstraints={{ left: 0, top: 0, right: 0, bottom: 0 }}
+                    dragElastic={0.2}
+                    className={`flex justify-between items-center gap-6 border-b-2 p-8P px-32P
+                      ${
+                        theme === 'theme1'
+                          ? 'border-b-white'
+                          : 'border-b-dark-grayish-blue-light'
+                      }
+                      `}
+                  >
+                    <span className="flex justify-center items-center gap-4">
+                      <form
+                        action={actions.updateTodo}
+                        className="flex items-center"
+                      >
+                        <input type="hidden" name="done" />
+                        <button
+                          type="button"
+                          className={`cursor-pointer min-w-[2rem] min-h-[2rem] border rounded-full
+                      ${todo.done && 'bg-check-background'}
+                      ${
+                        theme === 'theme1'
+                          ? 'border-white'
+                          : 'border-dark-grayish-blue-light'
+                      }
+                      `}
+                          onClick={() => handleCheck(todo.id)}
+                        >
+                          <Image
+                            src={checked}
+                            className={`w-1/2 mx-auto
+                      ${!todo.done && 'hidden'}
+                      `}
+                            alt="check todo"
+                          />
+                        </button>
+                      </form>
+                      <span
+                        onPointerDown={(e) => controls.start(e)}
+                        className={`py-16P ${
+                          todo.done
+                            ? 'line-through text-very-dark-grayish-blue-light'
+                            : ''
+                        }`}
+                      >
+                        {todo.input}
+                      </span>
+                    </span>
+
+                    <button
+                      type="submit"
+                      className="cursor-pointer"
+                      onClick={() => handleDelete(todo.id)}
+                    >
+                      <Image id="delete" src={cross} alt="delete" />
+                    </button>
+                  </Reorder.Item>
+                )
               )
-            )
-          )}
+            )}
+          </Reorder.Group>
 
           {/* Stats */}
           <div className="flex justify-between items-center gap-4 text-md text-dark-grayish-blue-light p-24P">

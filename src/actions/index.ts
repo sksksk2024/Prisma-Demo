@@ -1,10 +1,30 @@
 'use server';
 
 import { db } from '@/utils/db';
+import { Prisma } from '@prisma/client';
+
+export async function updateTodoOrder(
+  orderedTodos: { id: string; order: number }[]
+) {
+  try {
+    const updatePromises = orderedTodos.map(({ id, order }) =>
+      db.todo.update({
+        where: { id },
+        data: { order } as { order: number },
+      })
+    );
+
+    await Promise.all(updatePromises);
+  } catch (error) {
+    throw new Error(`Failed to update todo order: ${error}`);
+  }
+}
 
 export async function getTodos() {
   try {
-    const todos = await db.todo.findMany();
+    const todos = await db.todo.findMany({
+      orderBy: { order: 'asc' },
+    });
     return todos;
   } catch (error) {
     throw new Error(`Failed to fetch todos: ${error}`);
@@ -25,6 +45,21 @@ export async function getTodoById(id: string) {
   }
 }
 
+// export async function createTodo(formData: FormData) {
+//   try {
+//     const input = formData.get('input') as string;
+//     if (!input) {
+//       throw new Error('Input is required');
+//     }
+
+//     await db.todo.create({
+//       data: { input, done: false } as { input: string; done: boolean },
+//     });
+//   } catch (error) {
+//     throw new Error(`Failed to create todo: ${error}`);
+//   }
+// }
+
 export async function createTodo(formData: FormData) {
   try {
     const input = formData.get('input') as string;
@@ -32,8 +67,19 @@ export async function createTodo(formData: FormData) {
       throw new Error('Input is required');
     }
 
+    // Get the highest current order value
+    const lastTodo = await db.todo.findFirst({
+      orderBy: { order: 'desc' },
+    });
+
+    const newOrder = lastTodo ? lastTodo.order + 1 : 1;
+
     await db.todo.create({
-      data: { input, done: false } as { input: string; done: boolean },
+      data: { input, done: false, order: newOrder } as {
+        input: string;
+        done: boolean;
+        order: number;
+      },
     });
   } catch (error) {
     throw new Error(`Failed to create todo: ${error}`);
